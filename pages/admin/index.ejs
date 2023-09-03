@@ -5,5 +5,23 @@
 
 <div class="container">
     <h1>Admin panel</h1>
-    
+    <% if(page == "/") { %>
+        <div class="nav">
+            <button class="nav_element_selected">Home</button>
+            <button class="nav_element" onclick="gS();">Statistics</button>
+            <button class="nav_element" onclick="gMMT();">Monitor & Manage Traffic</button>
+        </div>
+    <% } else if(page == "/statistics/") { %>
+        <div class="nav">
+            <button class="nav_element" onclick="gH();">Home</button>
+            <button class="nav_element_selected">Statistics</button>
+            <button class="nav_element" onclick="gMMT();">Monitor & Manage Traffic</button>
+        </div>
+    <% } else if(page == "/traffic/") { %>
+        <div class="nav">
+            <button class="nav_element" onclick="gH();">Home</button>
+            <button class="nav_element" onclick="gS();">Statistics</button>
+            <button class="nav_element_selected">Monitor & Manage Traffic</button>
+        </div>
+    <% } %>
 </div>

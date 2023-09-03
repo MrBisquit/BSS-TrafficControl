@@ -28,3 +28,31 @@ p {
     font-size: large;
     font-weight: 900;
 }
+
+.nav {
+    width: 100%;
+    background-color: #474747;
+    color: #FFFFFF;
+}
+
+.nav_element {
+    margin-top: 0.5rem;
+    margin-left: 0.5rem;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+    background-color: #575757;
+    border: 0;
+    color: white;
+    padding: 1rem;
+}
+
+.nav_element_selected {
+    margin-top: 0.5rem;
+    margin-left: 0.5rem;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+    background-color: #373737;
+    border: 0;
+    color: white;
+    padding: 1rem;
+}

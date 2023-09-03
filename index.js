@@ -115,37 +115,147 @@ app.get("/admin/", (req, res) => {
     var assets = {
         ... default_assets,
         css : __dirname + "/public/admin.css",
-        admin : generateAdminJS()
+        admin : generateAdminJS({ page : checkExists(req.query.p) ? req.query.p : "/" })
     };
 
     var new_assets = makeUpAssets(assets);
 
-    res.render("admin/index.ejs", { assets : new_assets });
+    res.render("admin/index.ejs", { assets : new_assets, page : checkExists(req.query.p) ? req.query.p : "/" });
 });
 
 app.listen(80);
 
 function checkExists(value) {
-    return true ? value != null && value != undefined : false;
+    return value != null && value != undefined && value != "" ? true : false;
 }
 
 function generateAdminJS(options) {
     const id = crypto.randomBytes(16).toString("hex");
-    setTimeout(() => {
+
+    var UglifyJS = require("uglify-js");
+    var UglifyJSOptions = {
+        compress : {
+            unsafe : true,
+            hoist_funs : true
+        },
+        mangle : {
+            // toplevel : true // Cannot be used because we need function names.
+        },
+        output : {
+            beautify : false,
+            preamble: `/* Generated code - ${id}.js */`
+        }
+    }
+    /*setTimeout(() => {
         try {
             fs.rmSync(__dirname + "/public/generated/" + id + ".js");
         } catch {}
-    }, 25);
-    let code = `
-        // Generated code - ID: ${id}
+    }, 2500);*/
 
+    let indexPage = `
+        // Index page
+
+        d.title = "BSS-TrafficControl - Admin";
+        l("Info", "Updated title...");
+
+        const fetchAnalytics = () => {
+
+        }
+
+        const goStatistics = () => { location = "/admin/?p=/statistics/"; }
+
+        const goMonitorManageTraffic = () => { location = "/admin/?p=/traffic/"; }
+
+        const fA = fetchAnalytics;
+        const gS = goStatistics;
+        const gMMT = goMonitorManageTraffic;
+
+        l("Info", "Index page ready...");
     `;
 
+    let statisticsPage = `
+        // Statistics page
+
+        d.title = "BSS-TrafficControl - Admin";
+        l("Info", "Updated title...");
+
+        const fetchAnalytics = () => {
+
+        }
+
+        const goHome = () => { location = "/admin/?p=/"; }
+
+        const goMonitorManageTraffic = () => { location = "/admin/?p=/traffic/"; }
+
+        const fA = fetchAnalytics;
+        const gH = goHome;
+        const gMMT = goMonitorManageTraffic;
+
+        l("Info", "Statistics page ready...");
+    `;
+
+    let trafficPage = `
+        // Traffic (Monitor & Manage Traffic) page
+
+        d.title = "BSS-TrafficControl - Admin";
+        l("Info", "Updated title...");
+
+        const fetchAnalytics = () => {
+
+        }
+
+        const goHome = () => { location = "/admin/?p=/"; }
+
+        const goStatistics = () => { location = "/admin/?p=/statistics/"; }
+
+        const fA = fetchAnalytics;
+        const gH = goHome;
+        const gS = goStatistics;
+
+        l("Info", "Statistics page ready...");
+    `;
+
+    let page = "";
+    if(options.page == "/") {
+        page = indexPage;
+    } else if(options.page == "/statistics/") {
+        page = statisticsPage;
+    } else if(options.page == "/traffic/") {
+        page = trafficPage;
+    }
+
+    let code = `
+        // Generated code - ${id}.js
+        const config = ${JSON.stringify(options)};
+        let w = window;
+        let d = document;
+        let c = console;
+
+        const getMoment = () => { return new Date(); }
+        const gM = getMoment;
+
+        const log = (status, message) => {
+            var date = gM();
+            c.log("[" + status + "] (" + date + ") " + message);
+        }
+        const l = log;
+
+        l("Info", "Loading...");
+
+        ${page}
+
+        l("Info", "${id}.js ready.");
+
+        // End
+    `;
+
+    var result = UglifyJS.minify(code, UglifyJSOptions);
+
     if(fs.existsSync(__dirname + '/public/generated')) {
-        fs.writeFileSync(__dirname + "/public/generated/" + id + ".js", code);
+        fs.writeFileSync(__dirname + "/public/generated/" + id + ".js", result.code);
     } else {
         fs.mkdirSync(__dirname + "/public/generated");
-        fs.writeFileSync(__dirname + "/public/generated/" + id + ".js", code);
+        fs.writeFileSync(__dirname + "/public/generated/" + id + ".js", result.code);
     }
 
     return __dirname + "/public/generated/" + id + ".js";
