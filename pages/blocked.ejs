@@ -1,0 +1,35 @@
+<head>
+    <link rel="stylesheet" href="<%- assets.css %>">
+</head>
+
+<div class="container">
+    <h1>Your connection has been blocked.</h1>
+    <div>
+        <p>
+            <b><u><%- data.visit.datetime || "N/A" %></u></b><br>
+            Attempted to visit: <b><%- data.visit.location || "N/A" %></b><br>
+            Reason of blocking: <b><%- data.visit.reason || "N/A" %></b><br>
+            IP address: <b><%- data.visit.ip %></b><br>
+            <br>
+            <div>
+                <p>
+                    <% if(data.visit.type == 0) { %>
+                        This ban is <b><u>an IP ban</u></b>.
+                    <% } else if(data.visit.type == 1) { %>
+                        This ban is <b><u>an admin imposed ban</u></b>.
+                    <% } else if(data.visit.type == 2) { %>
+                        This ban is <b><u>a system imposed ban</u></b>.
+                    <% } else if(data.visit.type == 3) { %>
+                        This ban is <b><u>a temporary ban</u></b>.<br>
+                        <u><h3 id="countdown">00y 00m 00d 00h 00m 00s</h3></u>
+                        <script src="<%- assets.blocked_timeout %>"></script>
+                        <script>
+                            var countDownDate = new Date("<%- data.visit.banned_until %>").getTime();
+                            start();
+                        </script>
+                    <% } %>
+                </p>
+            </div>
+        </p>
+    </div>
+</div>
