@@ -11,6 +11,7 @@
             <button class="nav_element" onclick="gS();">Statistics</button>
             <button class="nav_element" onclick="gMMT();">Monitor & Manage Traffic</button>
         </div>
+        <p>Nothing to show here...</p>
     <% } else if(page == "/statistics/") { %>
         <div class="nav">
             <button class="nav_element" onclick="gH();">Home</button>
@@ -23,5 +24,43 @@
             <button class="nav_element" onclick="gS();">Statistics</button>
             <button class="nav_element_selected">Monitor & Manage Traffic</button>
         </div>
+        <div style="margin: 15px;">
+            <select>
+                <option hidden>Filter by</option>
+                <option>None</option>
+                <option disabled>───── Only show ─────</option>
+                <option>Only show threats</option>
+
+                <option disabled>────── Sorting ──────</option>
+                <option>Sort A-Z</option>
+                <options>Sort Z-A</options>
+            </select>
+            &nbsp;&nbsp;<input placeholder="Search..." style="width: 15rem;" id="search"
+            onkeyup="searchUpdated(gEBI('search').value);" />
+            &nbsp;&nbsp;<button onclick="clearFilters();" class="h">Clear filters</button>
+            &nbsp;&nbsp;<button onclick="showTable();" class="h">Refresh</button>
+        </div>
+        <table style="width: 100%;" id="values">
+            <tbody>
+                <tr>
+                    <th>Request ID</th>
+                    <th>User ID</th>
+                    <th>Page URL</th>
+                    <th>Threat?</th>
+                </tr>
+                <!--<tr onclick="viewLog('123');">
+                    <td>123</td>
+                    <td>123</td>
+                    <td>/</td>
+                    <td style="background: green;">No</td>
+                </tr>
+                <tr onclick="viewLog('123');">
+                    <td>123</td>
+                    <td>123</td>
+                    <td>/?sql=SELECT * FROM Users</td>
+                    <td style="background: red;">Yes</td>
+                </tr>-->
+            </tbody>
+        </table>
     <% } %>
 </div>

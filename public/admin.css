@@ -44,6 +44,13 @@ p {
     border: 0;
     color: white;
     padding: 1rem;
+    transition: border-radius 1s;
+}
+
+.nav_element:hover {
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+    transition: border-radius 1s;
 }
 
 .nav_element_selected {
@@ -55,4 +62,41 @@ p {
     border: 0;
     color: white;
     padding: 1rem;
+    transition: border-radius 1s;
+}
+
+.nav_element_selected:hover {
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+    transition: border-radius 1s;
+}
+
+table {
+    color: white;
+    border-collapse: collapse;
+}
+
+th {
+    background-color: #575757;
+}
+
+td, th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+table tr:nth-child(even){background-color: #474747;}
+table tr:hover {
+    background-color: #575757;
+}
+
+tr {
+    text-align: center;
+}
+
+select, input, button.h {
+    padding: 0.5rem;
+    background-color: #474747;
+    color: white;
+    border: 0;
+    border-radius: 0.5rem;
 }

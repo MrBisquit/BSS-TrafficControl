@@ -25,7 +25,7 @@ var temp_log = [];
 var asset_urls = {};
 
 var default_assets = {
-    protect : __dirname + "/public/protect.js"
+    //protect : ""//__dirname + "/public/protect.js"
 }
 
 function generateAssetURL(asset_link, info) {
@@ -40,7 +40,9 @@ function generateAssetURL(asset_link, info) {
 }
 
 function makeUpAssets(assets) {
-    var new_assets = {};
+    var new_assets = {
+        protect : generateAssetURL(generateProtect())
+    };
     var assets_keys = Object.keys(assets);
     var assets_values = Object.values(assets);
     for (let i = 0; i < assets_keys.length; i++) {
@@ -200,8 +202,92 @@ function generateAdminJS(options) {
         d.title = "BSS-TrafficControl - Admin";
         l("Info", "Updated title...");
 
+        let data = {
+            "123" : {
+                id : "123",
+                userID : "123",
+                url : "/",
+                threat: false
+            },
+            "456" : {
+                id : "456",
+                userID : "456",
+                url : "/?sql=SELECT * FROM Users",
+                threat : true
+            }
+        }
+
+        let defaultTable;
+
+        let shownData = Object.values(data);
+
         const fetchAnalytics = () => {
 
+        }
+
+        const viewLog = (id) => {
+            alert("Viewing log id " + id);
+        }
+
+        const searchUpdated = (value) => {
+            shownData = [];
+            let theData = Object.values(data);
+
+            for(var i = 0; i < theData.length; i++) {
+                if(contains(theData[i].id, value) ||
+                 contains(theData[i].userID, value) ||
+                 contains(theData[i].url, value)) {
+                    shownData.push(theData[i]);
+                }
+            }
+
+            if(!checkExists(value)) {
+                shownData = theData;
+            }
+
+            showTable();
+        }
+
+        const clearFilters = () => {
+            gEBI("search").value = "";
+            shownData = Object.values(data);
+            showTable();
+        }
+
+        const showTable = () => {
+            const values = gEBI("values");
+            values.innerHTML = defaultTable;
+            for(var i = 0; i < shownData.length; i++) {
+                let tr = document.createElement("tr");
+                tr.id = shownData[i].id;
+                tr.onclick = (e) => {
+                    console.log(e);
+                    viewLog(e.srcElement.id);
+                }
+
+                let RID = document.createElement("td");
+                RID.innerHTML = shownData[i].id;
+                RID.id = shownData[i].id;
+                tr.appendChild(RID);
+
+                let UID = document.createElement("td");
+                UID.innerHTML = shownData[i].userID;
+                UID.id = shownData[i].id;
+                tr.appendChild(UID);
+
+                let URL = document.createElement("td");
+                URL.innerHTML = shownData[i].url;
+                URL.id = shownData[i].id;
+                tr.appendChild(URL);
+
+                let T = document.createElement("td");
+                T.innerHTML = shownData[i].threat ? "Yes" : "No";
+                T.style.backgroundColor = shownData[i].threat ? "red" : "green";
+                T.id = shownData[i].id;
+                tr.appendChild(T);
+
+                values.appendChild(tr);
+            }
         }
 
         const goHome = () => { location = "/admin/?p=/"; }
@@ -211,6 +297,10 @@ function generateAdminJS(options) {
         const fA = fetchAnalytics;
         const gH = goHome;
         const gS = goStatistics;
+
+        setTimeout(showTable, 2);
+        setTimeout(() => { defaultTable = gEBI("values").innerHTML }, 0);
+        l("Success", "Shown page");
 
         l("Info", "Statistics page ready...");
     `;
@@ -240,6 +330,12 @@ function generateAdminJS(options) {
         }
         const l = log;
 
+        const gEBI = (id) => { return document.getElementById(id); }
+        const contains = (what, contains) => {
+            return what.includes(contains);
+            //return what.indexOf(contains) >= 0 ? true : false;
+        }
+
         l("Info", "Loading...");
 
         ${page}
@@ -247,6 +343,121 @@ function generateAdminJS(options) {
         l("Info", "${id}.js ready.");
 
         // End
+    `;
+
+    var result = UglifyJS.minify(code, UglifyJSOptions);
+
+    if(fs.existsSync(__dirname + '/public/generated')) {
+        fs.writeFileSync(__dirname + "/public/generated/" + id + ".js", result.code);
+    } else {
+        fs.mkdirSync(__dirname + "/public/generated");
+        fs.writeFileSync(__dirname + "/public/generated/" + id + ".js", result.code);
+    }
+
+    return __dirname + "/public/generated/" + id + ".js";
+}
+
+function generateProtect() {
+    const id = crypto.randomBytes(16).toString("hex");
+
+    var UglifyJS = require("uglify-js");
+    var UglifyJSOptions = {
+        compress : {
+            unsafe : true,
+            hoist_funs : true
+        },
+        mangle : {
+            // toplevel : true // Cannot be used because we need function names.
+        },
+        output : {
+            beautify : false,
+            preamble: `/* Generated code - ${id}.js */`
+        }
+    }
+
+    var API_KEY = 'NO_API_KEY_PRESENT';
+
+    var code = `
+        try {
+            let w = window;
+            let d = document;
+            let c = console;
+        } catch {}
+        
+        const checkExists = (value) => {
+            return value != null && value != undefined && value != "" ? true : false;
+        }
+
+        const errorCodes = {
+            0 : "NO_ERROR",
+            1 : "INVALID_TOKEN",
+            2 : "UNAUTHORISED",
+            3 : "RESPONSE_NOT_OK",
+            4 : "INVALID_UNRECOGNISED_OR_MISSING_ERROR"
+        }
+
+        const regexPatterns = {
+            url : new RegExp("/(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/")
+        }
+
+        class link {
+            constructor(url) {
+                if(regexPatterns.url.test(url)) {
+                    this.url = url;
+                } else {
+                    console.error("URL did not match regex!");
+                    return;
+                }
+            }
+
+            url = null;
+            isGood = null;
+
+            check() {
+                return true;
+                return false;
+            }
+        }
+
+        document.protect = {
+            getAsset : {
+                fromID = async (assetID) => {
+                    try {
+                        const response = await fetch('/api/fetchAsset/?id=' + assetID, {
+                            method : "POST",
+                            body : JSON.stringify({
+                                API_KEY : "${API_KEY}"
+                            })
+                        })
+                        if(!response.ok) {
+                            c.error(errorCodes[3]);
+                        }
+                        const json = await response.json();
+                        if(checkExists(json.error) && json.error != 0) {
+                            c.error(checkExists(errorCodes[json.error]) ? errorCodes[json.error] : errorCodes[4]);
+                        }
+                        return json;
+                    } catch {
+                        c.error(errorCodes[3]);
+                    }
+                },
+            },
+            checkConnection = async () => {
+                try {
+                    const response = await fetch('/api/');
+                    if(!response.ok) {
+                        return false;
+                    }
+                } catch {
+                    return false;
+                }
+            },
+            links : {
+                checkLink = async (url) => {
+                    const checkedLink = await new link(url).check();
+                }
+            }
+        }
     `;
 
     var result = UglifyJS.minify(code, UglifyJSOptions);
