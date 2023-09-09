@@ -19,34 +19,45 @@
             <button class="nav_element" onclick="gMMT();">Monitor & Manage Traffic</button>
         </div>
     <% } else if(page == "/traffic/") { %>
+        <div class="bottom_popup" id="popup">
+            <div class="bottom_popup-content">
+                <span class="loader"></span>
+                <h2 id="bottom_popup_name"></h2>
+                <h4 id="bottom_popup_data" style="color: white;"></h4>
+            </div>
+        </div>
+
         <div class="nav">
             <button class="nav_element" onclick="gH();">Home</button>
             <button class="nav_element" onclick="gS();">Statistics</button>
             <button class="nav_element_selected">Monitor & Manage Traffic</button>
         </div>
         <div style="margin: 15px;">
-            <select>
-                <option hidden>Filter by</option>
-                <option>None</option>
+            <select id="filters">
+                <option hidden value="0">Filter by</option>
+                <option value="None">None</option>
                 <option disabled>───── Only show ─────</option>
-                <option>Only show threats</option>
+                <option value="OST">Only show threats</option>
+                <option value="OSB">Only show blocked</option>
 
                 <option disabled>────── Sorting ──────</option>
-                <option>Sort A-Z</option>
-                <options>Sort Z-A</options>
+                <option value="AZ">Sort A-Z</option>
+                <options value="ZA">Sort Z-A</options>
             </select>
             &nbsp;&nbsp;<input placeholder="Search..." style="width: 15rem;" id="search"
             onkeyup="searchUpdated(gEBI('search').value);" />
             &nbsp;&nbsp;<button onclick="clearFilters();" class="h">Clear filters</button>
             &nbsp;&nbsp;<button onclick="showTable();" class="h">Refresh</button>
         </div>
+        <span class="loader"></span>
         <table style="width: 100%;" id="values">
             <tbody>
                 <tr>
-                    <th>Request ID</th>
-                    <th>User ID</th>
-                    <th>Page URL</th>
-                    <th>Threat?</th>
+                    <th style="width: 16%;">Request ID</th>
+                    <th style="width: 16%;">User ID</th>
+                    <th style="width: 50%;">Page URL</th>
+                    <th style="width: 8%;">Threat?</th>
+                    <th style="width: 8%;">Blocked?</th>
                 </tr>
                 <!--<tr onclick="viewLog('123');">
                     <td>123</td>

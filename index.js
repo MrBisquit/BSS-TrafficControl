@@ -52,6 +52,7 @@ function makeUpAssets(assets) {
 }
 
 app.use((req, res, next) => {
+    const request_id = crypto.randomBytes(16).toString("hex");
     const data = {
         visit : {
             datetime : moment().toDate(),
@@ -62,9 +63,14 @@ app.use((req, res, next) => {
             banned_until : moment().add(30, "s").toDate(),
             blocked : false,
             checking : false
+        },
+        table_data : {
+            id : request_id,
+            userID : "N/A",
+            url : req.url,
+            threat : false
         }
     }
-    var request_id = crypto.randomBytes(16).toString("hex");
     res.header("request-id", request_id);
     if(req.url.startsWith("/assets/")) {
         console.log(`Request ${request_id} -> ${data.visit.location} -> ${asset_urls[req.url].asset_link}`);
@@ -207,13 +213,29 @@ function generateAdminJS(options) {
                 id : "123",
                 userID : "123",
                 url : "/",
-                threat: false
+                threat: false,
+                blocked: false
             },
             "456" : {
                 id : "456",
                 userID : "456",
                 url : "/?sql=SELECT * FROM Users",
-                threat : true
+                threat : true,
+                blocked : true
+            },
+            "789" : {
+                id : "789",
+                userID : "456",
+                url : "/",
+                threat : false,
+                blocked : true
+            },
+            "101112" : {
+                id : "101112",
+                userID : "123",
+                url : "/",
+                threat : null,
+                blocked : false
             }
         }
 
@@ -225,8 +247,18 @@ function generateAdminJS(options) {
 
         }
 
+        const openPopup = () => {
+            let popup = gEBI("popup");
+            popup.style.display = "block";
+        }
+
         const viewLog = (id) => {
-            alert("Viewing log id " + id);
+            const currentData = data[id];
+            gEBI("bottom_popup_name").innerHTML = "Log ID - " + currentData.id;
+            gEBI("bottom_popup_data").innerHTML = "Log ID - " + currentData.id +
+            "<br>User ID - " + currentData.userID +
+            "<br>Page URL - " + currentData.url;
+            openPopup();
         }
 
         const searchUpdated = (value) => {
@@ -248,13 +280,44 @@ function generateAdminJS(options) {
             showTable();
         }
 
+        const filterThreats = () => {
+            shownData = [];
+            let theData = Object.values(data);
+
+            for(var i = 0; i < theData.length; i++) {
+                if(theData[i].threat) {
+                    shownData.push(theData[i]);
+                }
+            }
+
+            showTable();
+        }
+
+        const filterBlocked = () => {
+            shownData = [];
+            let theData = Object.values(data);
+
+            for(var i = 0; i < theData.length; i++) {
+                if(theData[i].blocked) {
+                    shownData.push(theData[i]);
+                }
+            }
+
+            showTable();
+        }
+
         const clearFilters = () => {
+            let filters = gEBI("filters");
+            filters.value = "None";
             gEBI("search").value = "";
             shownData = Object.values(data);
             showTable();
         }
 
         const showTable = () => {
+            if(defaultTable == undefined) {
+                l.reload();
+            }
             const values = gEBI("values");
             values.innerHTML = defaultTable;
             for(var i = 0; i < shownData.length; i++) {
@@ -281,10 +344,21 @@ function generateAdminJS(options) {
                 tr.appendChild(URL);
 
                 let T = document.createElement("td");
-                T.innerHTML = shownData[i].threat ? "Yes" : "No";
-                T.style.backgroundColor = shownData[i].threat ? "red" : "green";
+                if(shownData[i].threat == null) {
+                    T.style.backgroundColor = "orange";
+                    T.innerHTML = "-";
+                } else {
+                    T.style.backgroundColor = shownData[i].threat ? "red" : "green";
+                    T.innerHTML = shownData[i].threat ? "Yes" : "No";
+                }
                 T.id = shownData[i].id;
                 tr.appendChild(T);
+
+                let B = document.createElement("td");
+                B.innerHTML = shownData[i].blocked ? "Yes" : "No";
+                B.style.backgroundColor = shownData[i].blocked ? "red" : "green";
+                B.id = shownData[i].id;
+                tr.appendChild(B);
 
                 values.appendChild(tr);
             }
@@ -298,11 +372,32 @@ function generateAdminJS(options) {
         const gH = goHome;
         const gS = goStatistics;
 
+        setTimeout(() => {
+            let popup = gEBI("popup");
+            window.onclick = function(event) {
+                if (event.target == popup) {
+                  popup.style.display = "none";
+                }
+              }
+        }, 5);
+        setTimeout(() => {
+            let filters = gEBI("filters");
+            filters.addEventListener("change", () => {
+                let value = filters.value;
+                if(value == "None") {
+                    searchUpdated(gEBI("search").value);
+                } else if(value == "OST") {
+                    filterThreats();
+                } else if(value == "OSB") {
+                    filterBlocked();
+                }
+            });
+        }, 0);
         setTimeout(showTable, 2);
         setTimeout(() => { defaultTable = gEBI("values").innerHTML }, 0);
         l("Success", "Shown page");
 
-        l("Info", "Statistics page ready...");
+        l("Info", "Traffic page ready...");
     `;
 
     let page = "";
