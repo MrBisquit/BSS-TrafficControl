@@ -74,6 +74,13 @@ p {
 table {
     color: white;
     border-collapse: collapse;
+    table-layout:fixed;
+    word-break: break-word;
+}
+
+.table_overflow {
+    overflow-y: scroll;
+    height: calc(100% - 23%);
 }
 
 th {
@@ -184,4 +191,3 @@ select, input, button.h {
       transform: translateX(0%);
     }
   }
-      

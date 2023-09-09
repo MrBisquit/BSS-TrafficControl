@@ -47,31 +47,33 @@
             &nbsp;&nbsp;<input placeholder="Search..." style="width: 15rem;" id="search"
             onkeyup="searchUpdated(gEBI('search').value);" />
             &nbsp;&nbsp;<button onclick="clearFilters();" class="h">Clear filters</button>
-            &nbsp;&nbsp;<button onclick="showTable();" class="h">Refresh</button>
+            &nbsp;&nbsp;<button onclick="refresh();" class="h">Refresh</button>
         </div>
-        <span class="loader"></span>
-        <table style="width: 100%;" id="values">
-            <tbody>
-                <tr>
-                    <th style="width: 16%;">Request ID</th>
-                    <th style="width: 16%;">User ID</th>
-                    <th style="width: 50%;">Page URL</th>
-                    <th style="width: 8%;">Threat?</th>
-                    <th style="width: 8%;">Blocked?</th>
-                </tr>
-                <!--<tr onclick="viewLog('123');">
-                    <td>123</td>
-                    <td>123</td>
-                    <td>/</td>
-                    <td style="background: green;">No</td>
-                </tr>
-                <tr onclick="viewLog('123');">
-                    <td>123</td>
-                    <td>123</td>
-                    <td>/?sql=SELECT * FROM Users</td>
-                    <td style="background: red;">Yes</td>
-                </tr>-->
-            </tbody>
-        </table>
+        <span class="loader" id="lat"></span>
+        <div class="table_overflow">
+            <table style="width: 100%;" id="values">
+                <tbody>
+                    <tr>
+                        <th style="width: 16%;">Request ID</th>
+                        <th style="width: 16%;">User ID</th>
+                        <th style="width: 50%;">Page URL</th>
+                        <th style="width: 8%;">Threat?</th>
+                        <th style="width: 8%;">Blocked?</th>
+                    </tr>
+                    <!--<tr onclick="viewLog('123');">
+                        <td>123</td>
+                        <td>123</td>
+                        <td>/</td>
+                        <td style="background: green;">No</td>
+                    </tr>
+                    <tr onclick="viewLog('123');">
+                        <td>123</td>
+                        <td>123</td>
+                        <td>/?sql=SELECT * FROM Users</td>
+                        <td style="background: red;">Yes</td>
+                    </tr>-->
+                </tbody>
+            </table>
+        </div>
     <% } %>
 </div>

@@ -71,6 +71,9 @@ app.use((req, res, next) => {
             threat : false
         }
     }
+    if(req.url != "/api/admin/logs/") {
+        temp_log.push(data);
+    }
     res.header("request-id", request_id);
     if(req.url.startsWith("/assets/")) {
         console.log(`Request ${request_id} -> ${data.visit.location} -> ${asset_urls[req.url].asset_link}`);
@@ -117,6 +120,10 @@ app.get("/", (req, res) => {
         ... default_assets
     };
     res.render("index.ejs", { assets : makeUpAssets(assets) });
+});
+
+app.get("/api/admin/logs/", (req, res) => {
+    return res.jsonp(temp_log);
 });
 
 app.get("/admin/", (req, res) => {
@@ -209,7 +216,7 @@ function generateAdminJS(options) {
         l("Info", "Updated title...");
 
         let data = {
-            "123" : {
+            /*"123" : {
                 id : "123",
                 userID : "123",
                 url : "/",
@@ -236,7 +243,7 @@ function generateAdminJS(options) {
                 url : "/",
                 threat : null,
                 blocked : false
-            }
+            }*/
         }
 
         let defaultTable;
@@ -364,6 +371,51 @@ function generateAdminJS(options) {
             }
         }
 
+        const fetchAndRefresh = async () => {
+            let lat = gEBI("lat");
+            //lat.style.display = "block";
+
+            try {
+                let response = await fetch("/api/admin/logs/");
+                if(!response.ok) {
+                    //return fetchAndRefresh();
+                }
+                let json = await response.json();
+                console.log(json);
+                
+                data = {};
+                for(var i = 0; i < json.length; i++) {
+                    data[json[i].table_data.id] = json[i].table_data;
+                }
+
+                updateFilters();
+                showTable();
+                
+                let lat = gEBI("lat");
+                lat.style.display = "none";
+            } catch {
+                //return fetchAndRefresh();
+            }
+        }
+
+        const updateFilters = () => {
+            let value = filters.value;
+            if(value == "None") {
+                searchUpdated(gEBI("search").value);
+            } else if(value == "OST") {
+                filterThreats();
+            } else if(value == "OSB") {
+                filterBlocked();
+            }
+        }
+
+        const refresh = () => {
+            let lat = gEBI("lat");
+            lat.style.display = "block";
+            
+            //fetchAndRefresh();
+        }
+
         const goHome = () => { location = "/admin/?p=/"; }
 
         const goStatistics = () => { location = "/admin/?p=/statistics/"; }
@@ -371,6 +423,11 @@ function generateAdminJS(options) {
         const fA = fetchAnalytics;
         const gH = goHome;
         const gS = goStatistics;
+
+        setInterval(() => { /* clearFilters(); */ fetchAndRefresh(); }, 5000);
+        setTimeout(() => {
+            clearFilters();
+        }, 0);
 
         setTimeout(() => {
             let popup = gEBI("popup");
@@ -383,14 +440,7 @@ function generateAdminJS(options) {
         setTimeout(() => {
             let filters = gEBI("filters");
             filters.addEventListener("change", () => {
-                let value = filters.value;
-                if(value == "None") {
-                    searchUpdated(gEBI("search").value);
-                } else if(value == "OST") {
-                    filterThreats();
-                } else if(value == "OSB") {
-                    filterBlocked();
-                }
+                updateFilters();
             });
         }, 0);
         setTimeout(showTable, 2);
