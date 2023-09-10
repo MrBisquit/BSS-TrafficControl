@@ -177,9 +177,9 @@ function generateAdminJS(options) {
 
         }
 
-        const goStatistics = () => { location = "/admin/?p=/statistics/"; }
+        const goStatistics = () => { setNavigating(); location = "/admin/?p=/statistics/"; }
 
-        const goMonitorManageTraffic = () => { location = "/admin/?p=/traffic/"; }
+        const goMonitorManageTraffic = () => { setNavigating(); location = "/admin/?p=/traffic/"; }
 
         const fA = fetchAnalytics;
         const gS = goStatistics;
@@ -198,9 +198,9 @@ function generateAdminJS(options) {
 
         }
 
-        const goHome = () => { location = "/admin/?p=/"; }
+        const goHome = () => { setNavigating(); location = "/admin/?p=/"; }
 
-        const goMonitorManageTraffic = () => { location = "/admin/?p=/traffic/"; }
+        const goMonitorManageTraffic = () => { setNavigating(); location = "/admin/?p=/traffic/"; }
 
         const fA = fetchAnalytics;
         const gH = goHome;
@@ -254,13 +254,30 @@ function generateAdminJS(options) {
 
         }
 
+        let selectedLog = {};
+        let online = true;
+
         const openPopup = () => {
             let popup = gEBI("popup");
             popup.style.display = "block";
         }
 
+        const openUserPopup = () => {
+            let popup = gEBI("popup");
+            popup.style.display = "none";
+
+            let userPopup = gEBI("user_popup");
+            userPopup.style.display = "block";
+        }
+
+        const popupVU = () => {
+            gEBI("bottom_user_popup_name").innerHTML = "User ID - " + selectedLog.userID;
+            openUserPopup();
+        }
+
         const viewLog = (id) => {
             const currentData = data[id];
+            selectedLog = currentData;
             gEBI("bottom_popup_name").innerHTML = "Log ID - " + currentData.id;
             gEBI("bottom_popup_data").innerHTML = "Log ID - " + currentData.id +
             "<br>User ID - " + currentData.userID +
@@ -323,7 +340,8 @@ function generateAdminJS(options) {
 
         const showTable = () => {
             if(defaultTable == undefined) {
-                l.reload();
+                //l.reload();
+                return;
             }
             const values = gEBI("values");
             values.innerHTML = defaultTable;
@@ -331,7 +349,6 @@ function generateAdminJS(options) {
                 let tr = document.createElement("tr");
                 tr.id = shownData[i].id;
                 tr.onclick = (e) => {
-                    console.log(e);
                     viewLog(e.srcElement.id);
                 }
 
@@ -352,10 +369,12 @@ function generateAdminJS(options) {
 
                 let T = document.createElement("td");
                 if(shownData[i].threat == null) {
-                    T.style.backgroundColor = "orange";
+                    T.style.color = "orange";
+                    // Changed backgroundColor to color.
                     T.innerHTML = "-";
                 } else {
-                    T.style.backgroundColor = shownData[i].threat ? "red" : "green";
+                    T.style.color = shownData[i].threat ? "red" : "green";
+                    // Changed backgroundColor to color.
                     T.innerHTML = shownData[i].threat ? "Yes" : "No";
                 }
                 T.id = shownData[i].id;
@@ -363,7 +382,8 @@ function generateAdminJS(options) {
 
                 let B = document.createElement("td");
                 B.innerHTML = shownData[i].blocked ? "Yes" : "No";
-                B.style.backgroundColor = shownData[i].blocked ? "red" : "green";
+                B.style.color = shownData[i].blocked ? "red" : "green";
+                // Changed backgroundColor to color.
                 B.id = shownData[i].id;
                 tr.appendChild(B);
 
@@ -374,6 +394,8 @@ function generateAdminJS(options) {
         const fetchAndRefresh = async () => {
             let lat = gEBI("lat");
             //lat.style.display = "block";
+
+            if(!online) return;
 
             try {
                 let response = await fetch("/api/admin/logs/");
@@ -393,7 +415,8 @@ function generateAdminJS(options) {
                 
                 let lat = gEBI("lat");
                 lat.style.display = "none";
-            } catch {
+            } catch(error) {
+                console.log(error);
                 //return fetchAndRefresh();
             }
         }
@@ -413,27 +436,41 @@ function generateAdminJS(options) {
             let lat = gEBI("lat");
             lat.style.display = "block";
             
-            //fetchAndRefresh();
+            fetchAndRefresh();
         }
 
-        const goHome = () => { location = "/admin/?p=/"; }
+        const goHome = () => { setNavigating(); location = "/admin/?p=/"; }
 
-        const goStatistics = () => { location = "/admin/?p=/statistics/"; }
+        const goStatistics = () => { setNavigating(); location = "/admin/?p=/statistics/"; }
 
         const fA = fetchAnalytics;
         const gH = goHome;
         const gS = goStatistics;
 
+        window.addEventListener('online', () => {
+            online = true;
+            gEBI("offline_popup").style.display = "none";
+        });
+        window.addEventListener('offline', () => {
+            online = false;
+            gEBI("offline_popup").style.display = "block";
+        });
+
         setInterval(() => { /* clearFilters(); */ fetchAndRefresh(); }, 5000);
         setTimeout(() => {
+            fetchAndRefresh();
             clearFilters();
-        }, 0);
+        }, 5);
 
         setTimeout(() => {
             let popup = gEBI("popup");
+            let userPopup = gEBI("user_popup");
             window.onclick = function(event) {
                 if (event.target == popup) {
                   popup.style.display = "none";
+                } else if(event.target == userPopup) {
+                    userPopup.style.display = "none";
+                    popup.style.display = "block";
                 }
               }
         }, 5);
@@ -442,9 +479,9 @@ function generateAdminJS(options) {
             filters.addEventListener("change", () => {
                 updateFilters();
             });
-        }, 0);
+        }, 5);
         setTimeout(showTable, 2);
-        setTimeout(() => { defaultTable = gEBI("values").innerHTML }, 0);
+        setTimeout(() => { defaultTable = gEBI("values").innerHTML }, 5);
         l("Success", "Shown page");
 
         l("Info", "Traffic page ready...");
@@ -482,6 +519,26 @@ function generateAdminJS(options) {
         }
 
         l("Info", "Loading...");
+
+        const setNavigating = () => {
+            localStorage.setItem("an", true);
+        }
+
+        setTimeout(() => {
+            if(checkExists(localStorage.getItem("an"))) {
+                localStorage.removeItem("an");
+                gEBI("content").style.display = "block";
+            } else {
+                gEBI("loading").style.display = "block";
+                let loadI = setInterval(() => {
+                    if(document.readyState == "complete") {
+                        gEBI("loading").style.display = "none";
+                        gEBI("content").style.display = "block";
+                        clearInterval(loadI);
+                    }
+                }, 500);
+            }
+        }, 5);
 
         ${page}
 

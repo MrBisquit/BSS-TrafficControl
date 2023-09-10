@@ -3,7 +3,12 @@
     <script src="<%- assets.admin %>"></script>
 </head>
 
-<div class="container">
+<div class="container" id="loading" style="display: none;">
+    <span class="loader"></span>
+    <h1>Loading...</h1>
+</div>
+
+<div class="container" id="content" style="display: none;">
     <h1>Admin panel</h1>
     <% if(page == "/") { %>
         <div class="nav">
@@ -21,9 +26,27 @@
     <% } else if(page == "/traffic/") { %>
         <div class="bottom_popup" id="popup">
             <div class="bottom_popup-content">
-                <span class="loader"></span>
+                <span class="loader" id="lap"></span>
                 <h2 id="bottom_popup_name"></h2>
                 <h4 id="bottom_popup_data" style="color: white;"></h4>
+                <button class="h" onclick="popupVU();">View user</button>
+                <br><br>
+            </div>
+        </div>
+
+        <div class="bottom_popup" id="user_popup">
+            <div class="bottom_popup-content">
+                <span class="loader" id="laup"></span>
+                <h2 id="bottom_user_popup_name"></h2>
+                <br><br>
+            </div>
+        </div>
+
+        <div class="bottom_popup" id="offline_popup">
+            <div class="bottom_popup-content" style="height: 100%;">
+                <span class="loader"></span>
+                <h1 class="h">You are offline</h1>
+                <h2>Please check your internet connection</h2>
             </div>
         </div>
 

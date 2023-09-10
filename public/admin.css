@@ -20,7 +20,8 @@ body {
 }
 
 h1 {
-    filter: invert(100%);
+    --filter: invert(100%);
+    color: white !important;
 }
 
 p {
@@ -79,7 +80,7 @@ table {
 }
 
 .table_overflow {
-    overflow-y: scroll;
+    overflow-y: auto;
     height: calc(100% - 23%);
 }
 
@@ -106,6 +107,12 @@ select, input, button.h {
     color: white;
     border: 0;
     border-radius: 0.5rem;
+    transition: background 1s;
+}
+
+select:hover, input:hover, button.h:hover {
+    background-color: #575757;
+    transition: background 1s;
 }
 
 /* W3School stuff because idk how to do CSS */
