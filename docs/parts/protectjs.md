@@ -5,6 +5,7 @@ Protect.js is a core feature of BSS-TrafficControl and if you remove it, it will
 *Contributing can mean fixing bugs, adding features or improving it. A normal user who is just using this security repo should not edit this file unless they know what they are doing.
 
 `let w = window, d = document, c = console;` This is here to make it easier and quicker to type.
+
 `checkExists(value);` Simple little function to check if a value exists, a lot of things depend on this so should not be removed.
 
 `errorCodes` This is an object containing errors that may be sent by the server, these should not be edited unless you are adding in a new one.
