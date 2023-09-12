@@ -15,6 +15,7 @@
             <button class="nav_element_selected">Home</button>
             <button class="nav_element" onclick="gS();">Statistics</button>
             <button class="nav_element" onclick="gMMT();">Monitor & Manage Traffic</button>
+            <button class="nav_element" onclick="gSs();">Settings</button>
         </div>
         <p>Nothing to show here...</p>
     <% } else if(page == "/statistics/") { %>
@@ -22,13 +23,14 @@
             <button class="nav_element" onclick="gH();">Home</button>
             <button class="nav_element_selected">Statistics</button>
             <button class="nav_element" onclick="gMMT();">Monitor & Manage Traffic</button>
+            <button class="nav_element" onclick="gSs();">Settings</button>
         </div>
     <% } else if(page == "/traffic/") { %>
         <div class="bottom_popup" id="popup">
             <div class="bottom_popup-content">
                 <span class="loader" id="lap"></span>
                 <h2 id="bottom_popup_name"></h2>
-                <h4 id="bottom_popup_data" style="color: white;"></h4>
+                <h4 id="bottom_popup_content" style="color: white;"></h4>
                 <button class="h" onclick="popupVU();">View user</button>
                 <br><br>
             </div>
@@ -38,6 +40,7 @@
             <div class="bottom_popup-content">
                 <span class="loader" id="laup"></span>
                 <h2 id="bottom_user_popup_name"></h2>
+                <h4 id="bottom_user_popup_content"></h4>
                 <br><br>
             </div>
         </div>
@@ -54,6 +57,7 @@
             <button class="nav_element" onclick="gH();">Home</button>
             <button class="nav_element" onclick="gS();">Statistics</button>
             <button class="nav_element_selected">Monitor & Manage Traffic</button>
+            <button class="nav_element" onclick="gSs();">Settings</button>
         </div>
         <div style="margin: 15px;">
             <select id="filters">
@@ -98,5 +102,28 @@
                 </tbody>
             </table>
         </div>
+    <% } else if(page == "/settings/") { %>
+        <div class="nav">
+            <button class="nav_element" onclick="gH();">Home</button>
+            <button class="nav_element">Statistics</button>
+            <button class="nav_element" onclick="gMMT();">Monitor & Manage Traffic</button>
+            <button class="nav_element_selected">Settings</button>
+        </div>
+
+        <div style="margin: 15px;">
+            <button onclick="saveChanges();" id="saveChanges" class="h">Save changes</button>
+            &nbsp;&nbsp;<button onclick="resetDefaultSettings();" id="resetSettings" class="h">Reset to default settings</button>
+        </div>
+
+        <span class="loader" id="loader"></span>
+        <div id="settings" style="background-color: #575757; color: white;">h</div>
+    <% } else { %>
+        <div class="nav">
+            <button class="nav_element" onclick="gH();">Home</button>
+            <button class="nav_element">Statistics</button>
+            <button class="nav_element" onclick="gMMT();">Monitor & Manage Traffic</button>
+            <button class="nav_element" onclick="gSs();">Settings</button>
+        </div>
+        <h1>No page found</h1>
     <% } %>
 </div>

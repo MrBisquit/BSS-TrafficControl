@@ -1,0 +1,22 @@
+{
+    "blockVpn" : {
+        "name" : "Block VPNs",
+        "defaultValue" : false,
+        "value" : false,
+        "type" : "boolean"
+    },
+    "siteName" : {
+        "name" : "Site name",
+        "defaultValue" : "Site name",
+        "value" : "Site name",
+        "type" : "string",
+        "placeholder" : "Enter your site name..."
+    },
+    "geoIPAPIKey" : {
+        "name" : "Free GEO IP API Key",
+        "defaultValue" : "",
+        "value" : "",
+        "type" : "password",
+        "placeholder" : "Enter your Free GEO IP API key..."
+    }
+}

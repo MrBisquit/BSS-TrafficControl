@@ -22,6 +22,7 @@ app.use(expressLayouts);
 app.set('layout', 'layouts/layout');
 
 var temp_log = [];
+var temp_users = {};
 var asset_urls = {};
 
 var default_assets = {
@@ -53,6 +54,44 @@ function makeUpAssets(assets) {
 
 app.use((req, res, next) => {
     const request_id = crypto.randomBytes(16).toString("hex");
+    let user = null;
+    if(!checkExists(req.cookies.user) || !checkExists(temp_users[req.cookies.user])) {
+        let u = Object.values(temp_users);
+        for (let i = 0; i < u.length; i++) {
+            if(u[i].ip == req.ip) {
+                res.cookie("user", u[i].id);
+                user = u[i];
+            }
+        }
+    } else {
+        user = temp_users[req.cookies.user];
+    }
+
+    if(user == null) {
+        user = {
+            id : crypto.randomBytes(16).toString("hex"),
+            ip : req.ip,
+            threatLevel : 0,
+            threat : false,
+            blocked : {
+                blocked : false,
+                blockedUntil : null,
+                reason : null
+            },
+            requests : [],
+            heartbeat : {
+                lastHeartbeat : null
+            }
+        }
+        temp_users[user.id] = user;
+    }
+
+    if(req.query.heartbeat != undefined) {
+        user.heartbeat.lastHeartbeat = moment();
+    }
+
+    //user.heartbeat.lastHeartbeat = moment();
+
     const data = {
         visit : {
             datetime : moment().toDate(),
@@ -66,14 +105,21 @@ app.use((req, res, next) => {
         },
         table_data : {
             id : request_id,
-            userID : "N/A",
+            userID : user.id,
             url : req.url,
             threat : false
+        },
+        request : {
+            body : req.body,
+            protocol : req.protocol,
+            method : req.method
         }
     }
-    if(req.url != "/api/admin/logs/") {
+    if(!req.url.startsWith("/api/admin/")) {
+        user.requests.push(request_id);
         temp_log.push(data);
     }
+
     res.header("request-id", request_id);
     if(req.url.startsWith("/assets/")) {
         console.log(`Request ${request_id} -> ${data.visit.location} -> ${asset_urls[req.url].asset_link}`);
@@ -124,6 +170,29 @@ app.get("/", (req, res) => {
 
 app.get("/api/admin/logs/", (req, res) => {
     return res.jsonp(temp_log);
+});
+
+app.get("/api/admin/logs/:id/", (req, res) => {
+    for (let i = 0; i < temp_log.length; i++) {
+        if(temp_log[i].table_data.id == req.params.id) {
+            return res.jsonp(temp_log[i]);
+            //return res.jsonp(temp_log[i].table_data);
+        }
+    }
+
+    return res.jsonp({err : "LOG_NOT_FOUND"});
+});
+
+app.get("/api/admin/users/", (req, res) => {
+    return res.jsonp(temp_users);
+});
+
+app.get("/api/admin/users/:id/", (req, res) => {
+    return res.jsonp(checkExists(temp_users[req.params.id]) ? temp_users[req.params.id] : {});
+});
+
+app.get("/api/admin/config/", (req, res) => {
+    return res.json(JSON.parse(fs.readFileSync(__dirname + "/config.json")));
 });
 
 app.get("/admin/", (req, res) => {
@@ -177,13 +246,13 @@ function generateAdminJS(options) {
 
         }
 
-        const goStatistics = () => { setNavigating(); location = "/admin/?p=/statistics/"; }
+        /*const goStatistics = () => { setNavigating(); location = "/admin/?p=/statistics/"; }
 
         const goMonitorManageTraffic = () => { setNavigating(); location = "/admin/?p=/traffic/"; }
 
         const fA = fetchAnalytics;
         const gS = goStatistics;
-        const gMMT = goMonitorManageTraffic;
+        const gMMT = goMonitorManageTraffic;*/
 
         l("Info", "Index page ready...");
     `;
@@ -198,13 +267,13 @@ function generateAdminJS(options) {
 
         }
 
-        const goHome = () => { setNavigating(); location = "/admin/?p=/"; }
+        /*const goHome = () => { setNavigating(); location = "/admin/?p=/"; }
 
         const goMonitorManageTraffic = () => { setNavigating(); location = "/admin/?p=/traffic/"; }
 
         const fA = fetchAnalytics;
         const gH = goHome;
-        const gMMT = goMonitorManageTraffic;
+        const gMMT = goMonitorManageTraffic;*/
 
         l("Info", "Statistics page ready...");
     `;
@@ -270,19 +339,70 @@ function generateAdminJS(options) {
             userPopup.style.display = "block";
         }
 
-        const popupVU = () => {
+        const popupVU = async () => {
+            gEBI("laup").style.display = "block";
             gEBI("bottom_user_popup_name").innerHTML = "User ID - " + selectedLog.userID;
+            gEBI("bottom_user_popup_content").innerHTML = "";
             openUserPopup();
+
+            try {
+                let response = await fetch("/api/admin/users/" + selectedLog.userID);
+                let json = await response.json();
+
+                gEBI("laup").style.display = "none";
+                let blocked = "";
+                if(json.blocked.blocked) {
+                    blocked = "<span style='color: red;'>User is blocked</span><br>" +
+                    "They will be unblocked at " + json.blocked.blockedUntil + "<br>" +
+                    "Reason they are blocked: " + json.blocked.reason;
+                } else {
+                    blocked = "<span style='color: green;'>User is not blocked</span>";
+                }
+                let threat = "";
+                if(json.threat) {
+                    threat = "<span style='color: red;'>Threat</span><br>" + "Threat level: " + json.threatLevel;
+                }
+                gEBI("bottom_user_popup_content").innerHTML = blocked + "<br>" +
+                "Last heartbeat at " + json.heartbeat.lastHeartbeat + "<br>" +
+                "IP Address: " + json.ip + "<br>" + threat;
+                console.log(json);
+            } catch(error) {
+
+            } 
         }
 
-        const viewLog = (id) => {
+        const viewLog = async (id) => {
             const currentData = data[id];
             selectedLog = currentData;
+            gEBI("lap").style.display = "block";
             gEBI("bottom_popup_name").innerHTML = "Log ID - " + currentData.id;
-            gEBI("bottom_popup_data").innerHTML = "Log ID - " + currentData.id +
-            "<br>User ID - " + currentData.userID +
-            "<br>Page URL - " + currentData.url;
+            gEBI("bottom_popup_content").innerHTML = "";
             openPopup();
+
+            try {
+                let response = await fetch("/api/admin/logs/" + id);
+                let json = await response.json();
+
+                let blocked = "";
+                if(json.visit.blocked) {
+                    blocked = "<br><span style='color: red;'>The request was blocked</span>" +
+                    "<br>Reason: " + json.visit.reason;
+                } else {
+                    blocked = "<br><span style='color: green;'>The request went through</span>";
+                }
+                gEBI("lap").style.display = "none";
+                gEBI("bottom_popup_content").innerHTML = "Log ID - " + currentData.id +
+                "<br>User ID - " + currentData.userID +
+                "<br>Page URL - " + currentData.url +
+                blocked +
+                "<br>Method: " + json.request.method +
+                "<br>Protocol: " + json.request.protocol +
+                "<br>Body of request: " + JSON.stringify(json.request.body);
+
+                console.log(json);
+            } catch(error) {
+
+            }
         }
 
         const searchUpdated = (value) => {
@@ -403,7 +523,7 @@ function generateAdminJS(options) {
                     //return fetchAndRefresh();
                 }
                 let json = await response.json();
-                console.log(json);
+                //console.log(json);
                 
                 data = {};
                 for(var i = 0; i < json.length; i++) {
@@ -439,13 +559,13 @@ function generateAdminJS(options) {
             fetchAndRefresh();
         }
 
-        const goHome = () => { setNavigating(); location = "/admin/?p=/"; }
+        /*const goHome = () => { setNavigating(); location = "/admin/?p=/"; }
 
         const goStatistics = () => { setNavigating(); location = "/admin/?p=/statistics/"; }
 
         const fA = fetchAnalytics;
         const gH = goHome;
-        const gS = goStatistics;
+        const gS = goStatistics;*/
 
         window.addEventListener('online', () => {
             online = true;
@@ -487,6 +607,120 @@ function generateAdminJS(options) {
         l("Info", "Traffic page ready...");
     `;
 
+    let settingsPage = `
+        let settingsData = {};
+
+        const loadSettings = async () => {
+            gEBI("loader").style.display = "block";
+
+            try {
+                let response = await fetch("/api/admin/config/");
+                let json = await response.json();
+
+                if(!response.ok) {
+                    return settings.innerHTML = "Failed to load settings! Error: RESPONSE_NOT_OK";
+                }
+
+                settingsData = json;
+
+                showSettings();
+
+                gEBI("loader").style.display = "none";
+            } catch(error) {
+                console.error(error);
+            }
+        }
+
+        const showSettings = () => {
+            let settings = gEBI("settings");
+            settings.innerHTML = "";
+
+
+            let keys = Object.keys(settingsData);
+            for(var i = 0; i < keys.length; i++) {
+                let setting = settingsData[keys[i]];
+
+                let div = document.createElement("div");
+                div.style.padding = "0.5rem";
+                div.id = keys[i];
+                
+                let label = document.createElement("label");
+                label.innerHTML = setting.name + "&nbsp;&nbsp;";
+                label.id = keys[i];
+                div.appendChild(label);
+
+                if(setting.type == "boolean") {
+                    let checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+
+                    if(setting.value == true) {
+                        checkbox.checked = true;
+                    }
+
+                    checkbox.id = keys[i];
+
+                    checkbox.onclick = (e) => {
+                        settingsData[e.srcElement.id].value = checkbox.checked;
+                    }
+
+                    div.appendChild(checkbox);
+                } else if(setting.type == "string") {
+                    let input = document.createElement("input");
+                    input.placeholder = setting.placeholder;
+                    input.value = setting.value;
+
+                    input.id = keys[i];
+
+                    input.oninput = (e) => {
+                        settingsData[e.srcElement.id].value = input.value;
+                    }
+
+                    div.appendChild(input);
+                } else if(setting.type == "number") {
+                    let input = document.createElement("input");
+                    input.type = "number";
+                    input.placeholder = setting.placeholder;
+                    input.value = setting.value;
+
+                    input.id = keys[i];
+
+                    input.oninput = (e) => {
+                        settingsData[e.srcElement.id].value = input.value;
+                    }
+
+                    div.appendChild(input);
+                } else if(setting.type == "password") {
+                    let input = document.createElement("input");
+                    input.type = "password";
+                    input.placeholder = setting.placeholder;
+                    input.value = setting.value;
+
+                    input.id = keys[i];
+
+                    input.oninput = (e) => {
+                        settingsData[e.srcElement.id].value = input.value;
+                    }
+
+                    div.appendChild(input);
+                }
+
+                settings.appendChild(div);
+            }
+        }
+
+        const resetDefaultSettings = () => {
+            let keys = Object.keys(settingsData);
+            for(var i = 0; i < keys.length; i++) {
+                let setting = settingsData[keys[i]];
+                setting.value = setting.defaultValue;
+            }
+
+            showSettings();
+        }
+
+        setTimeout(() => { loadSettings(); }, 5);
+    `;
+
     let page = "";
     if(options.page == "/") {
         page = indexPage;
@@ -494,6 +728,8 @@ function generateAdminJS(options) {
         page = statisticsPage;
     } else if(options.page == "/traffic/") {
         page = trafficPage;
+    } else if(options.page == "/settings/") {
+        page = settingsPage;
     }
 
     let code = `
@@ -517,6 +753,16 @@ function generateAdminJS(options) {
             return what.includes(contains);
             //return what.indexOf(contains) >= 0 ? true : false;
         }
+
+        const goHome = () => { setNavigating(); location = "/admin/?p=/"; };
+        const goStatistics = () => { setNavigating(); location = "/admin/?p=/statistics/"; };
+        const goMonitorManageTraffic = () => { setNavigating(); location = "/admin/?p=/traffic/"; };
+        const goSettings = () => { setNavigating(); location = "/admin/?p=/settings/"; };
+
+        const gH = () => { goHome(); };
+        const gS = () => { goStatistics(); };
+        const gMMT = () => { goMonitorManageTraffic(); };
+        const gSs = () => { goSettings(); };
 
         l("Info", "Loading...");
 
