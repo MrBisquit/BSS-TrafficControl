@@ -1,5 +1,6 @@
 # BSS-TrafficControl
 Another one of my take-what-you-need GitHub repos, basically: you take what you need and leave the rest.
+You can get started at: [Getting started](docs/getting-started.md).
 
 ## Cool features
 - Built in admin dashboard you can rip right out and make it your own.

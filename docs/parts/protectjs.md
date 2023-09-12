@@ -1,0 +1,2 @@
+# Protect.JS
+Protect.js is a core feature of BSS-TrafficControl and if you remove it, it will remove a core chunk of the features that BSS-TrafficControl provides such as link security, requesting assets and more.
