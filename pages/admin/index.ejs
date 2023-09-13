@@ -17,7 +17,11 @@
             <button class="nav_element" onclick="gMMT();">Monitor & Manage Traffic</button>
             <button class="nav_element" onclick="gSs();">Settings</button>
         </div>
-        <p>Nothing to show here...</p>
+        <span class="loader" id="loader"></span>
+        <!-- At a glance statistics-->
+        <p class="h"><span style="font-size: xx-large;" id="stat_online">0</span> users online with 
+            <span style="font-size: xx-large;" id="stat_requests">0</span> requests and 
+            <span style="font-size: xx-large;" id="stat_threats">0</span> threats blocked</p>
     <% } else if(page == "/statistics/") { %>
         <div class="nav">
             <button class="nav_element" onclick="gH();">Home</button>
@@ -116,7 +120,7 @@
         </div>
 
         <span class="loader" id="loader"></span>
-        <div id="settings" style="background-color: #575757; color: white;">h</div>
+        <div id="settings" style="background-color: #575757; color: white;"></div>
     <% } else { %>
         <div class="nav">
             <button class="nav_element" onclick="gH();">Home</button>

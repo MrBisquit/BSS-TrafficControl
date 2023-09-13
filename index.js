@@ -25,6 +25,12 @@ var temp_log = [];
 var temp_users = {};
 var asset_urls = {};
 
+let quick_stats = {
+    online : 0,
+    requests : 0,
+    threats : 0
+}
+
 var default_assets = {
     //protect : ""//__dirname + "/public/protect.js"
 }
@@ -53,6 +59,8 @@ function makeUpAssets(assets) {
 }
 
 app.use((req, res, next) => {
+    quick_stats.requests += 1;
+
     const request_id = crypto.randomBytes(16).toString("hex");
     let user = null;
     if(!checkExists(req.cookies.user) || !checkExists(temp_users[req.cookies.user])) {
@@ -66,6 +74,8 @@ app.use((req, res, next) => {
     } else {
         user = temp_users[req.cookies.user];
     }
+
+    let needsChecking = false;
 
     if(user == null) {
         user = {
@@ -84,6 +94,8 @@ app.use((req, res, next) => {
             }
         }
         temp_users[user.id] = user;
+
+        needsChecking = true;
     }
 
     if(req.query.heartbeat != undefined) {
@@ -92,7 +104,7 @@ app.use((req, res, next) => {
 
     //user.heartbeat.lastHeartbeat = moment();
 
-    const data = {
+    let data = {
         visit : {
             datetime : moment().toDate(),
             location : req.url,
@@ -115,6 +127,11 @@ app.use((req, res, next) => {
             method : req.method
         }
     }
+
+    if(needsChecking) {
+        data.visit.checking = true;
+    }
+
     if(!req.url.startsWith("/api/admin/")) {
         user.requests.push(request_id);
         temp_log.push(data);
@@ -192,7 +209,20 @@ app.get("/api/admin/users/:id/", (req, res) => {
 });
 
 app.get("/api/admin/config/", (req, res) => {
-    return res.json(JSON.parse(fs.readFileSync(__dirname + "/config.json")));
+    return res.jsonp(JSON.parse(fs.readFileSync(__dirname + "/config.json")));
+});
+
+app.post("/api/admin/config/", (req, res) => {
+    let config = JSON.parse(fs.readFileSync(__dirname + "/config.json"));
+    console.log(req.body);
+    config = JSON.parse(req.body);
+    fs.writeFileSync(__dirname + "/config.json", JSON.stringify(config));
+
+    return res.jsonp({ success : true });
+});
+
+app.get("/api/admin/basic-stats/", (req, res) => {
+    return res.jsonp(quick_stats);
 });
 
 app.get("/admin/", (req, res) => {
@@ -242,8 +272,33 @@ function generateAdminJS(options) {
         d.title = "BSS-TrafficControl - Admin";
         l("Info", "Updated title...");
 
-        const fetchAnalytics = () => {
+        const fetchAnalytics = async () => {
+            let online = gEBI("stat_online");
+            let requests = gEBI("stat_requests");
+            let threats = gEBI("stat_threats");
 
+            let loader = gEBI("loader");
+
+            try {
+                //loader.style.display = "block";
+
+                let response = await fetch("/api/admin/basic-stats/");
+                let json = await response.json();
+
+                if(!response.ok) {
+                    return console.error("RESPONSE_NOT_OK");
+                }
+
+                console.log(json);
+
+                online.innerHTML = json.online;
+                requests.innerHTML = json.requests;
+                threats.innerHTML = json.threats;
+
+                loader.style.display = "none";
+            } catch (error) {
+
+            }
         }
 
         /*const goStatistics = () => { setNavigating(); location = "/admin/?p=/statistics/"; }
@@ -253,6 +308,9 @@ function generateAdminJS(options) {
         const fA = fetchAnalytics;
         const gS = goStatistics;
         const gMMT = goMonitorManageTraffic;*/
+
+        setTimeout(() => { fetchAnalytics(); }, 5);
+        setInterval(() => { fetchAnalytics(); }, 5000);
 
         l("Info", "Index page ready...");
     `;
@@ -668,6 +726,7 @@ function generateAdminJS(options) {
                     let input = document.createElement("input");
                     input.placeholder = setting.placeholder;
                     input.value = setting.value;
+                    input.style.width = "100%";
 
                     input.id = keys[i];
 
@@ -681,6 +740,7 @@ function generateAdminJS(options) {
                     input.type = "number";
                     input.placeholder = setting.placeholder;
                     input.value = setting.value;
+                    input.style.width = "100%";
 
                     input.id = keys[i];
 
@@ -694,6 +754,7 @@ function generateAdminJS(options) {
                     input.type = "password";
                     input.placeholder = setting.placeholder;
                     input.value = setting.value;
+                    input.style.width = "100%";
 
                     input.id = keys[i];
 
@@ -704,8 +765,25 @@ function generateAdminJS(options) {
                     div.appendChild(input);
                 }
 
+                let description = document.createElement("p");
+                let desc = checkExists(setting.description) ? setting.description : "No description set.";
+                description.innerHTML = "<i>" + desc + "</i>";
+                description.id = keys[i];
+                description.classList.add("gray_desc");
+                div.appendChild(description);
+
                 settings.appendChild(div);
+
+                if(i != keys.length - 1) {
+                    settings.appendChild(document.createElement("hr"));
+                }
             }
+        }
+
+        const saveChanges = async () => {
+            try {
+                let response = await fetch("/api/admin/config/", { method : 'POST', body : JSON.stringify(settingsData) });
+            } catch {}
         }
 
         const resetDefaultSettings = () => {

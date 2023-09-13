@@ -24,8 +24,18 @@ h1 {
     color: white !important;
 }
 
+p.h {
+    color: white !important;
+    font-weight: normal;
+}
+
+p.gray_desc {
+    color: rgb(184, 184, 184) !important;
+    font-weight: normal;
+}
+
 p {
-    filter: invert(100%);
+    --filter: invert(100%);
     font-size: large;
     font-weight: 900;
 }
