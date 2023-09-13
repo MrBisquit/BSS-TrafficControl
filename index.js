@@ -215,7 +215,7 @@ app.get("/api/admin/config/", (req, res) => {
 app.post("/api/admin/config/", (req, res) => {
     let config = JSON.parse(fs.readFileSync(__dirname + "/config.json"));
     console.log(req.body);
-    config = JSON.parse(req.body);
+    config = req.body;
     fs.writeFileSync(__dirname + "/config.json", JSON.stringify(config));
 
     return res.jsonp({ success : true });
@@ -782,7 +782,15 @@ function generateAdminJS(options) {
 
         const saveChanges = async () => {
             try {
-                let response = await fetch("/api/admin/config/", { method : 'POST', body : JSON.stringify(settingsData) });
+                let response = await fetch("/api/admin/config/", 
+                {
+                    method : 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body : JSON.stringify(settingsData)
+                });
             } catch {}
         }
 
