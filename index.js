@@ -258,7 +258,11 @@ app.get("/admin/", (req, res) => {
     res.render("admin/index.ejs", { assets : new_assets, page : checkExists(req.query.p) ? req.query.p : "/" });
 });
 
-app.listen(80);
+try {
+
+    app.listen(80);
+
+} catch {}
 
 function checkExists(value) {
     return value != null && value != undefined && value != "" ? true : false;
