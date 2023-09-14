@@ -39,6 +39,21 @@ test('Test threat checking', () => {
                 ctl : 0.05,
                 threats : [{ item : "SELECT", level : 0.5 }]
             }
+        },
+        {
+            data : {
+                request : {
+                    request : {
+                        url : "/SELECT USER/"
+                    }
+                }
+            },
+            expect : {
+                threat : false,
+                ctl : 0.1,
+                threats : [{ item : "SELECT", level : 0.5 },
+                { item : "USER", level : 0.5 },]
+            }
         }
     ]
 
