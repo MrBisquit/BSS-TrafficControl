@@ -138,6 +138,8 @@ app.use((req, res, next) => {
         data.table_data.blocked = true;
         data.visit.blocked = true;
         data.visit.reason = "Blocked by threat scan.";
+    } else if(scanResult.ctl > 0) {
+        data.table_data.threat = null;
     }
 
     if(needsChecking) {

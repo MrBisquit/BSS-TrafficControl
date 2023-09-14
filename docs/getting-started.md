@@ -23,3 +23,4 @@ When you add new features to BSS-TrafficControl please be descriptive with what 
 
 ## Links
 [Docs](parts.md)
+[Using the dashboard](using-the-dashboard.md)
