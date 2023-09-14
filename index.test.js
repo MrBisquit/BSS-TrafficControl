@@ -44,14 +44,14 @@ test('Test threat checking', () => {
             data : {
                 request : {
                     request : {
-                        url : "/USER/"
+                        url : "/USERS/"
                     }
                 }
             },
             expect : {
                 threat : false,
                 ctl : 0.05,
-                threats : [{ item : "USER", level : 0.5 }]
+                threats : [{ item : "USERS", level : 0.5 }]
             }
         }
     ]
