@@ -1031,3 +1031,7 @@ setInterval(() => {
     if(!fs.existsSync(__dirname + '/public/generated')) return;
     fs.rmSync(__dirname + "/public/generated", { recursive : true, force : true });
 }, 25000);
+
+module.exports = {
+    checkExists : checkExists
+}
