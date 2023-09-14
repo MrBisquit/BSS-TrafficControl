@@ -43,6 +43,6 @@ test('Test threat checking', () => {
     ]
 
     data.forEach(item => {
-        expect(threatCheck(item)).toBe(item.expect);
+        expect(threatCheck(item.data)).toBe(item.expect);
     });
 });
