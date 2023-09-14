@@ -109,7 +109,7 @@
     <% } else if(page == "/settings/") { %>
         <div class="nav">
             <button class="nav_element" onclick="gH();">Home</button>
-            <button class="nav_element">Statistics</button>
+            <button class="nav_element" onclick="gS();">Statistics</button>
             <button class="nav_element" onclick="gMMT();">Monitor & Manage Traffic</button>
             <button class="nav_element_selected">Settings</button>
         </div>
@@ -120,11 +120,13 @@
         </div>
 
         <span class="loader" id="loader"></span>
-        <div id="settings" style="background-color: #575757; color: white;"></div>
+        <div class="table_overflow">
+            <div id="settings" style="background-color: #575757; color: white;"></div>
+        </div>
     <% } else { %>
         <div class="nav">
             <button class="nav_element" onclick="gH();">Home</button>
-            <button class="nav_element">Statistics</button>
+            <button class="nav_element" onclick="gS();">Statistics</button>
             <button class="nav_element" onclick="gMMT();">Monitor & Manage Traffic</button>
             <button class="nav_element" onclick="gSs();">Settings</button>
         </div>

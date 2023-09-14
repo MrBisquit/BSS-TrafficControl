@@ -22,11 +22,32 @@
         "placeholder" : "Enter your Free GEO IP API key...",
         "description" : "This is the API that will be used to check localisation for one of the methods of catching VPNs, you can get a free API token and put it here."
     },
-    "ProtectJSCheckOverLinks" : {
+    "protectJSCheckOverLinks" : {
         "name" : "Protect.JS Check over links",
         "defaultValue" : true,
         "value" : true,
         "type" : "boolean",
         "description" : "Toggles Protect.JS's ability to scan over the document for links and replaces them with checks protecting the user."
+    },
+    "logAPIAdminLinks" : {
+        "name" : "Log API Admin Links",
+        "defaultValue" : false,
+        "value" : false,
+        "type" : "boolean",
+        "description" : "Log API Admin links"
+    },
+    "enableServerConsoleLogging" : {
+        "name" : "Enable server console logging",
+        "defaultValue" : true,
+        "value" : true,
+        "type" : "boolean",
+        "description" : "Enables server logging (e.g. 'Request abc -> /' or 'Request abc -> /assets/')"
+    },
+    "maxctl" : {
+        "name" : "Maximum calculated threat level",
+        "defaultValue" : 0.5,
+        "value" : 0.5,
+        "type" : "number",
+        "description" : "If the calculated threat level is higher or equal to this value then it will count it as a threat."
     }
 }

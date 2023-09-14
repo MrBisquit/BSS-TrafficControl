@@ -119,29 +119,48 @@ app.use((req, res, next) => {
             id : request_id,
             userID : user.id,
             url : req.url,
-            threat : false
+            threat : false,
+            blocked : false
         },
         request : {
             body : req.body,
             protocol : req.protocol,
-            method : req.method
+            method : req.method,
+            request : {
+                url : req.url
+            }
         }
+    }
+
+    let scanResult = require('./lib/threatCheck')(data);
+    if(scanResult.threat) {
+        data.table_data.threat = true;
+        data.table_data.blocked = true;
+        data.visit.blocked = true;
+        data.visit.reason = "Blocked by threat scan.";
     }
 
     if(needsChecking) {
         data.visit.checking = true;
     }
 
-    if(!req.url.startsWith("/api/admin/")) {
+    if(!require('./config.json').logAPIAdminLinks.value) {
+        if(!req.url.startsWith("/api/admin/")) {
+            user.requests.push(request_id);
+            temp_log.push(data);
+        }
+    } else {
         user.requests.push(request_id);
         temp_log.push(data);
     }
 
     res.header("request-id", request_id);
-    if(req.url.startsWith("/assets/")) {
-        console.log(`Request ${request_id} -> ${data.visit.location} -> ${asset_urls[req.url].asset_link}`);
-    } else {
-        console.log(`Request ${request_id} -> ${data.visit.location}`);
+    if(require('./config.json').enableServerConsoleLogging.value) {
+        if(req.url.startsWith("/assets/")) {
+            console.log(`Request ${request_id} -> ${data.visit.location} -> ${asset_urls[req.url].asset_link}`);
+        } else {
+            console.log(`Request ${request_id} -> ${data.visit.location}`);
+        }
     }
 
     req.security = data;
