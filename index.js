@@ -261,7 +261,7 @@ app.get("/admin/", (req, res) => {
 try {
 
     app.listen(80).on('error', (err) => {
-        console.log(`Error starting server: ${err.message}`);
+        //console.log(`Error starting server: ${err.message}`);
     });
 
 } catch {}
