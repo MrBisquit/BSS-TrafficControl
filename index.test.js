@@ -15,7 +15,9 @@ test('Test threat checking', () => {
         {
             data : {
                 request : {
-                    url : "/"
+                    request : {
+                        url : "/"
+                    }
                 }
             },
             expect : {
@@ -27,7 +29,9 @@ test('Test threat checking', () => {
         {
             data : {
                 request : {
-                    url : "/SELECT"
+                    request : {
+                        url : "/SELECT"
+                    }
                 }
             },
             expect : {
