@@ -1,17 +1,30 @@
 # Using the dashboard
 (It's called the "Admin Panel" but you can just call it the dashboard for ease)
 
-Three tabs:
-- [Home](#home)
-- [Statistics](#statistics)
-- [Monitor & Manage Traffic](#monitor-&-manage-traffic)
-- [Settings](#settings)
+> You do not actually have to use this dashboard, it's just the default built in one that can show you how to do it.
+If you do decide to use this make sure you secure it correctly and secure it's API routes.
+
+Table of contents:
+- [Using the dashboard](#using-the-dashboard)
+  - [Home](#home)
+  - [Statistics](#statistics)
+  - [Monitor \& Manage Traffic](#monitor--manage-traffic)
+  - [Settings](#settings)
+  - [Settings -\> Queue](#settings---queue)
+- [Why use this dashboard](#why-use-this-dashboard)
+  - [Pros](#pros)
+  - [Cons](#cons)
+- [Why make your own dashboard](#why-make-your-own-dashboard)
+  - [Pros](#pros-1)
+  - [Cons](#cons-1)
 
 ## Home
 Not completed.
 
 ## Statistics
 Not completed.
+
+This is where all of the statistics are kept, this is not particularly needed but is nice to have anyway.
 
 ## Monitor & Manage Traffic
 This is considerably the most important tab of all of them, this is where you'll be able to view all of the logs, search through them, find users etc...
@@ -41,3 +54,41 @@ To use this, head over to the settings tab in the dashboard then you can do the 
     - Enable server console logging - Enables server logging (e.g. 'Request abc -> /' or 'Request abc -> /assets/')
     - Maximum calculated threat level - If the calculated threat level (CTL) is higher than or equal to this value then it will be counted as a threat.
         - Do note that if the CTL is higher than 0.75 then it will trigger the block anyway.
+
+There will be a setup wizard that you will most likely get when you first start off, this goes through basic settings, getting setup and will even pull down the latest data from the repo.
+You can leave it while it sets up everything if you want.
+
+Queues will be a feature that you can edit from the Settings page, this can be found at [Settings -\> Queue](#settings---queue)
+
+## Settings -> Queue
+> This can be accessed via Settings -> Queue
+
+Here is where you will be able to set up queueing, this can be set up in a way that it will be triggered when the site experiences a lot of traffic, the way queueing works is: When a user comes along to the website, they will be presented with a queue page, this will progress by it's self and they will be told not to refresh the page as it will destroy their position in queue and move everyone along, they then will be added back on the end of the queue.
+
+The waiting time will be calculated by working out the maximum time (Set in these settings) that someone can be on the site before they are taken back to the queue times the amount of people waiting.
+There will be slots, you may set the amount of slots, this can be set to any amount ranging between 1-1000 (May change). When a user manages to get into the 1st in the queue then they will have to wait for a queue slot to appear for them to fill.
+Obviously, admins may bypass this by their IP Address/User ID being marked with the tag "no-queue" (Which you will be able to easily do in these settings).
+
+You can set this manually or you can set this queuing system to start when the server recieves a certain amount of requests in a certain period of time.
+
+# Why use this dashboard
+Let me explain why you should use this dashboard over making your own.
+
+## Pros
+- It's reliable
+- It get's updates
+
+## Cons
+- Is not customisable
+- May not look or match your website
+
+# Why make your own dashboard
+
+## Pros
+- You can customise it to whatever you want
+- Matches your website
+- You may better understand how it works and functions
+
+## Cons
+- Does not recieve updates
+- May not be as reliable

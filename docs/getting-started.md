@@ -22,5 +22,4 @@ This is still a WIP so documentation is not ready, this will be updated when it 
 When you add new features to BSS-TrafficControl please be descriptive with what changes you have made and what they do and what parts they rely on. Update the documentation as you go so it's easier when it comes time to open a PR.
 
 ## Links
-[Docs](parts.md)
-[Using the dashboard](using-the-dashboard.md)
+[Docs](parts.md) | [Using the dashboard](using-the-dashboard.md)
