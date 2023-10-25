@@ -7,7 +7,7 @@ const crypto = require("crypto");
 const moment = require("moment");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
-const platform = require('platform');
+const platform = require("platform");
 
 app.use(cookieParser());
 
@@ -255,13 +255,17 @@ app.get("/admin/", (req, res) => {
 
     var new_assets = makeUpAssets(assets);
 
+    if(require("./config.json").needsSetup && req.query.p != "/setup-wizard/") {
+        return res.redirect("/admin/?p=/setup-wizard/");
+    }
+
     res.render("admin/index.ejs", { assets : new_assets, page : checkExists(req.query.p) ? req.query.p : "/" });
 });
 
 try {
 
     app.listen(80).on('error', (err) => {
-        //console.log(`Error starting server: ${err.message}`);
+        console.log(`Error starting server: ${err.message}`);
     });
 
 } catch {}
@@ -834,6 +838,181 @@ function generateAdminJS(options) {
         setTimeout(() => { loadSettings(); }, 5);
     `;
 
+    const wizard = {
+        pages : [
+            {
+                title : "Basic site data",
+                description : "Fill in some basic site data so BSS-TrafficControl can fill in the blanks.",
+                sections : [
+                    {
+                        name : "Site name",
+                        type : "string",
+                        placeholder : "Type your site name here...",
+                        settingID : "siteName"
+                    },
+                    {
+                        name : "Show site name?",
+                        type : "boolean",
+                        settingID : null
+                    }
+                ]
+            },
+            {
+                title : "General settings",
+                description : "General settings to set up",
+                sections : []
+            },
+            {
+                title : "Protect.JS settings",
+                description : "Settings specific to Protect.JS",
+                sections : [
+                    {
+                        name : "Maximum CTL (Calculated Threat Level)",
+                        type : "number",
+                        placeholder : "A decimal between 0 and 1",
+                        settingID : null
+                    }
+                ]
+            }
+        ]
+    };
+    const wizardData = {};
+
+    let setupWizardPage = `
+        const pages = JSON.parse('${JSON.stringify(wizard)}');
+        let data = JSON.parse('${JSON.stringify(wizardData)}');
+
+        let temp_loader = document.createElement("div");
+        temp_loader.classList.add("loader");
+
+        let page;
+        let pageID = 0;
+        
+        const loader = temp_loader;
+        temp_loader = undefined;
+        
+        const init = () => {
+            page = gEBI("page");
+            page.innerHTML = "";
+
+            renderPage(0);
+        }
+
+        const renderPage = (id) => {
+            pageID = id;
+            page.innerHTML = "";
+
+            const currentPage = pages.pages[id];
+
+            let title = document.createElement("h1");
+            title.innerHTML = currentPage.title;
+            page.appendChild(title);
+
+            let description = document.createElement("p");
+            description.classList.add("h");
+            description.innerHTML = currentPage.description;
+            page.appendChild(description);
+
+            let sections = document.createElement("div");
+            sections.id = "sections";
+            for(var i = 0; i < currentPage.sections.length; i++) {
+                let currentSection = document.createElement("div");
+                currentSection.id = "sections-" + (i + 1);
+                let section = currentPage.sections[i];
+
+                let name = document.createElement("h3");
+                name.innerHTML = section.name;
+                currentSection.appendChild(name);
+
+                if(section.type == "string") {
+                    let input = document.createElement("input");
+                    input.style.width = "100%";
+                    input.placeholder = section.placeholder;
+
+                    input.id = section.settingID;
+
+                    currentSection.appendChild(input);
+                } else if(section.type == "boolean") {
+                    let checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+
+                    checkbox.id = section.settingID;
+
+                    currentSection.appendChild(checkbox);
+                } else if(section.type == "number") {
+                    let input = document.createElement("input");
+                    input.type = "number";
+                    input.style.width = "100%";
+                    input.placeholder = section.placeholder;
+
+                    input.id = section.settingID;
+
+                    currentSection.appendChild(input);
+                }
+
+                if(i != currentPage.sections.length - 1) {
+                    let seperator = document.createElement("hr");
+                    currentSection.appendChild(seperator);
+                }
+
+                sections.appendChild(currentSection);
+            }
+            page.appendChild(sections);
+
+            let br = document.createElement("br");
+            page.appendChild(br);
+            page.appendChild(br);
+
+            let backButton = document.createElement("button");
+            backButton.innerHTML = "Back";
+            backButton.classList.add("h");
+            if(pageID == 0) {
+                backButton.disabled = true;
+            }
+            backButton.onclick = (e) => {
+                if(pageID != 0) {
+                    renderPage(pageID - 1);
+                }
+            }
+            page.appendChild(backButton);
+
+            let buttonSpacer = document.createElement("a");
+            buttonSpacer.innerHTML = "&nbsp;&nbsp;";
+            page.appendChild(buttonSpacer);
+
+            let nextButton = document.createElement("button");
+            nextButton.innerHTML = "Next";
+            nextButton.classList.add("h");
+            if(pageID == pages.pages.length - 1) {
+                nextButton.innerHTML = "Finish";
+            }
+            nextButton.onclick = (e) => {
+                if(pageID == pages.pages.length - 1) {
+                    finish();
+                } else {
+                    renderPage(pageID + 1);
+                }
+            }
+            page.appendChild(nextButton);
+        }
+
+        const finish = () => {
+            page.innerHTML = "";
+            page.appendChild(loader);
+
+            let title = document.createElement("h1");
+            title.innerHTML = "BSS-TrafficControl is getting setup...";
+            page.appendChild(title);
+
+            let process = document.createElement("p");
+            process.classList.add("h");
+            process.innerHTML = "Please wait...";
+            page.appendChild(process);
+        }
+
+        setTimeout(() => { gEBI("aph").style.display = "none"; init(); }, 5);
+    `;
+
     let page = "";
     if(options.page == "/") {
         page = indexPage;
@@ -843,6 +1022,8 @@ function generateAdminJS(options) {
         page = trafficPage;
     } else if(options.page == "/settings/") {
         page = settingsPage;
+    } else if(options.page == "/setup-wizard/") {
+        page = setupWizardPage;
     }
 
     let code = `

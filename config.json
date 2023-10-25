@@ -1,4 +1,5 @@
 {
+    "needsSetup" : true,
     "blockVpn" : {
         "name" : "Block VPNs",
         "defaultValue" : false,

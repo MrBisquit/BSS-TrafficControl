@@ -19,7 +19,7 @@ body {
     height: calc(100% - 3rem);
 }
 
-h1 {
+h1, h2, h3, h4, h5 {
     --filter: invert(100%);
     color: white !important;
 }
@@ -94,6 +94,11 @@ table {
     height: calc(100% - 23%);
 }
 
+.setup_overflow {
+    overflow-y: auto;
+    height: 100%;
+}
+
 th {
     background-color: #575757;
 }
@@ -122,6 +127,15 @@ select, input, button.h {
 
 select:hover, input:hover, button.h:hover {
     background-color: #575757;
+    transition: background 1s;
+}
+
+select:disabled, input:disabled, button:disabled {
+    background-color: #272727;
+    transition: background 1s;
+}
+select:disabled:hover, input:disabled:hover, button:disabled:hover {
+    background-color: #272727;
     transition: background 1s;
 }
 

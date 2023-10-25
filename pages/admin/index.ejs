@@ -9,7 +9,7 @@
 </div>
 
 <div class="container" id="content" style="display: none;">
-    <h1>Admin panel</h1>
+    <h1 id="aph">Admin panel</h1>
     <% if(page == "/") { %>
         <div class="nav">
             <button class="nav_element_selected">Home</button>
@@ -122,6 +122,12 @@
         <span class="loader" id="loader"></span>
         <div class="table_overflow">
             <div id="settings" style="background-color: #575757; color: white;"></div>
+        </div>
+    <% } else if(page == "/setup-wizard/") { %>
+        <div class="setup_overflow">
+            <div id="page">
+                <h1>Welcome to the setup wizard!</h1>
+            </div>
         </div>
     <% } else { %>
         <div class="nav">
